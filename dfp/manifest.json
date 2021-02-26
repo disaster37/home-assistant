@@ -1,0 +1,7 @@
+{
+  "domain": "Pond",
+  "name": "Pond control",
+  "documentation": "https://github.com/disaster37/home-assistant/dfp",
+  "codeowners": ["disaster37"],
+  "version": "0.0.1"
+}
