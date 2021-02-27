@@ -1,4 +1,5 @@
 import logging
+import requests
 import voluptuous as vol
 
 from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchEntity

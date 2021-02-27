@@ -25,9 +25,9 @@ class Client(metaclass=Singleton):
         self._username = username
         self._password = password
 
-        self.__auth()
+        self.getAccessToken()
     
-    def __auth(self):
+    def getAccessToken(self):
         payload = {
             "username": self._username,
             "password": self._password
@@ -52,7 +52,7 @@ class Client(metaclass=Singleton):
             # the JWT and refresh if necessary
             def wrapper(api,*args,**kwargs):
                 if time.time() > api._token_expiration:
-                    api.__auth()
+                    api.getAccessToken()
                 return decorated(api,*args,**kwargs)
 
             return wrapper
