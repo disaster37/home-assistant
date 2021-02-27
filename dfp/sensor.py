@@ -1,4 +1,7 @@
 import logging
+import requests
+from datetime import timedelta
+
 import voluptuous as vol
 
 from homeassistant.components.sensor import PLATFORM_SCHEMA
