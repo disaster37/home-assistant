@@ -144,8 +144,9 @@ class DFPSensor(Entity):
     def update(self):
         """Get the latest data from aREST API and update the state."""
         try:
-            self._value = self._client.dfpStatus(self._item)
-            self._available = True
+            if self._module == "dfp":
+                self._value = self._client.dfpStatus(self._item)
+                self._available = True
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._resource)
             self._available = False
