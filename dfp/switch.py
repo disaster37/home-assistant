@@ -73,7 +73,6 @@ class DFPSwitchAction(SwitchEntity):
 
     def __init__(self, location,  name, url, username, password, module, action_turn_on, action_turn_off, state):
         """Initialize the switch."""
-        self._resource = resource
         self._name = f"{location.title()} {name.title()}"
         self._module = module
         self._action_turn_on = action_turn_on
