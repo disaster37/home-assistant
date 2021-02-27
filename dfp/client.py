@@ -81,7 +81,7 @@ class Client(metaclass=Singleton):
 
         logging.debug("Status: %s", r.text)
 
-        return r.json()["attributes"][item]
+        return r.json()["data"]["attributes"][item]
 
 
 
