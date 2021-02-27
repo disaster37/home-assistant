@@ -38,7 +38,7 @@ SENSOR_FUNCTION_SCHEMA = vol.Schema(
         vol.Required(CONF_MODULE): cv.string,
         vol.Required(CONF_STATE): cv.string,
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string,
-        ol.Optional(CONF_VALUE_TEMPLATE): cv.template
+        vol.Optional(CONF_VALUE_TEMPLATE): cv.template
     }
 )
 
