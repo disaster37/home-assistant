@@ -1,6 +1,7 @@
 import logging
 import requests
 import time
+from .singleton import Singleton
 
 class Client(metaclass=Singleton):
 
