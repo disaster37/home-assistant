@@ -64,7 +64,7 @@ class Client(metaclass=Singleton):
         if action is None or not action:
             raise ValueError("Action must be a string")
 
-        r = self._client.post("%s/dfps/action/%s" % (self._url, action))
+        r = self._client.post("%s/api/dfps/action/%s" % (self._url, action))
 
         r.raise_for_status()
 
@@ -75,7 +75,7 @@ class Client(metaclass=Singleton):
         if item is None or not item:
             raise ValueError("Item must be a string")
         
-        r = self._client.get("%s/dfps" % self._url)
+        r = self._client.get("%s/api/dfps" % self._url)
 
         r.raise_for_status()
 
