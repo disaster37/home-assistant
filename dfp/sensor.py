@@ -22,7 +22,7 @@ from .client import Client
 
 _LOGGER = logging.getLogger(__name__)
 
-MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=30)
+MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=1)
 
 CONF_SENSORS = "sensors"
 CONF_USERNAME = "username"
