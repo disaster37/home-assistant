@@ -5,7 +5,7 @@ from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchEntity
 from homeassistant.const import CONF_NAME, CONF_RESOURCE, HTTP_OK
 import homeassistant.helpers.config_validation as cv
 
-from client import Client
+from .client import Client
 
 _LOGGER = logging.getLogger(__name__)
 
