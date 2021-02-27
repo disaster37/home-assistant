@@ -110,7 +110,7 @@ class DFPSwitchAction(SwitchEntity):
     def turn_on(self, **kwargs):
         """Turn the device on."""
 
-        if module == "dfp":
+        if self._module == "dfp":
             try:
                 # Turn on
                 self._client.dfpAction(self._action_turn_on)
