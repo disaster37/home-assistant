@@ -87,7 +87,7 @@ class DFPSwitchAction(SwitchEntity):
         # Check if we can get status
         try:
             self._client.dfpStatus(self._item)
-         except KeyError:
+        except KeyError:
             _LOGGER.error("No return_value received")
         except ValueError:
             _LOGGER.error("Response invalid")
