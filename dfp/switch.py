@@ -76,6 +76,7 @@ class DFPSwitchAction(SwitchEntity):
         """Initialize the switch."""
         self._name = f"{location.title()} {name.title()}"
         self._module = module
+        self._url = url
         self._action_turn_on = action_turn_on
         self._action_turn_off = action_turn_off
         self._item = state
@@ -150,6 +151,6 @@ class DFPSwitchAction(SwitchEntity):
                 self._state = self._client.dfpStatus(self._item)
                 self._available = True
         except requests.exceptions.ConnectionError:
-            _LOGGER.warning("No route to device %s", self._resource)
+            _LOGGER.warning("No route to device %s", self._url)
             self._available = False
 

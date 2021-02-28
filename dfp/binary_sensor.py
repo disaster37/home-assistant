@@ -106,6 +106,7 @@ class DFPBinarySensor(BinarySensorEntity):
         """Initialize the switch."""
         self._name = f"{location.title()} {name.title()}"
         self._module = module
+        self._url = url
         self._item = state
         self._value = None
         self._client = Client(url, username, password)
@@ -143,6 +144,6 @@ class DFPBinarySensor(BinarySensorEntity):
                 self._value = self._client.dfpStatus(self._item)
                 self._available = True
         except requests.exceptions.ConnectionError:
-            _LOGGER.warning("No route to device %s", self._resource)
+            _LOGGER.warning("No route to device %s", self._url)
             self._available = False
 

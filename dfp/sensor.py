@@ -105,6 +105,7 @@ class DFPSensor(Entity):
         self._name = f"{location.title()} {name.title()}"
         self._module = module
         self._item = state
+        self._url = url
         self._value = None
         self._client = Client(url, username, password)
         self._unit_of_measurement = unit_of_measurement
@@ -148,6 +149,6 @@ class DFPSensor(Entity):
                 self._value = self._client.dfpStatus(self._item)
                 self._available = True
         except requests.exceptions.ConnectionError:
-            _LOGGER.warning("No route to device %s", self._resource)
+            _LOGGER.warning("No route to device %s", self._url)
             self._available = False
 
