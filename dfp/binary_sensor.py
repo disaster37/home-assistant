@@ -124,7 +124,7 @@ class DFPBinarySensor(BinarySensorEntity):
 
         # Check if we can get status
         try:
-            self._client.dfpStatus(self._item)
+            self._value = self._client.dfpStatus(self._item)
         except requests.HTTPError as e:
             _LOGGER.error("Resource not found: %s", e)
         except KeyError:
