@@ -79,8 +79,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     sensors = config[CONF_SENSORS]
     for sensorName, sensor in sensors.items():
         renderer = make_renderer(sensor.get(CONF_VALUE_TEMPLATE))
-        dev.append(
-            DFPSensor(
+        try:
+            dfpSensor = DFPSensor(
                 config[CONF_NAME],
                 sensor.get(CONF_NAME),
                 config[CONF_RESOURCE],
@@ -91,7 +91,17 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
                 sensor.get(CONF_UNIT_OF_MEASUREMENT),
                 renderer
             )
-        )
+        except requests.exceptions.MissingSchema:
+            _LOGGER.error(
+                "Missing resource or schema in configuration. Add http:// to your URL"
+            )
+            return False
+        except requests.exceptions.ConnectionError:
+            _LOGGER.error("No route to device at %s", url)
+            return False    
+
+
+        dev.append(dfpSensor)
 
     add_entities(dev)
 
@@ -115,6 +125,8 @@ class DFPSensor(Entity):
         # Check if we can get status
         try:
             self._client.dfpStatus(self._item)
+        except requests.HTTPError as e:
+            _LOGGER.error("Resource not found: %s", e)
         except KeyError:
             _LOGGER.error("No return_value received")
         except ValueError:
@@ -150,5 +162,8 @@ class DFPSensor(Entity):
                 self._available = True
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._url)
+            self._available = False
+        except Exception as e:
+            _LOGGER.error("Error when update %s", e)
             self._available = False
 
