@@ -129,9 +129,6 @@ class DFPSwitchAction(SwitchEntity):
             try:
                 # Turn on
                 self._client.dfpAction(self._action_turn_on)
-
-                # Check status
-                self._state = self._client.dfpStatus(self._item)
             except Exception as e:
                  _LOGGER.error("Can't turn on function %s/%s at %s: %s", self._module, self._action_turn_off, self._resource, e)
 
@@ -139,21 +136,12 @@ class DFPSwitchAction(SwitchEntity):
         """Turn the device off."""
     
         if self._action_turn_off == "none":
-            try:
-                # Check status
-                self._state = self._client.dfpStatus(self._item)
-            except Exception as e:
-                 _LOGGER.error("Can't turn off function %s/%s at %s: %s", self._module, self._action_turn_off, self._resource, e)
-            
             return
        
         if self._module == "dfp":
             try:
                 # Turn on
                 self._client.dfpAction(self._action_turn_off)
-
-                # Check status
-                self._state = self._client.dfpStatus(self._item)
             except Exception as e:
                  _LOGGER.error("Can't turn off function %s/%s at %s: %s", self._module, self._action_turn_off, self._resource, e)
 
