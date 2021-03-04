@@ -161,7 +161,7 @@ class DFPSwitchAction(SwitchEntity):
         """Get the latest data from aREST API and update the state."""
         try:
             if self._module == "dfp":
-                self._state = self._client.dfpStatus(self._item, True)
+                self._state = self._client.dfpStatus(self._item)
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._url)
         except Exception as e:
