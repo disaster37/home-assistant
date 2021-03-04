@@ -13,7 +13,7 @@ class Client(metaclass=Singleton):
     _client = None
     _token_expiration = None
     _cache = {}
-    _cache_refresh = 1000
+    _cache_refresh = 5000
     _available = False
 
 
