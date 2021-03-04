@@ -45,7 +45,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the DFP switches."""
-    url = config[CONF_RESOURCE]
 
     dev = []
 
@@ -69,7 +68,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
             )
             return False
         except requests.exceptions.ConnectionError:
-            _LOGGER.error("No route to device at %s", url)
+            _LOGGER.error("No route to device at %s", config[CONF_RESOURCE])
             return False
         
         dev.append(dfpSwitch)
@@ -93,10 +92,13 @@ class DFPSwitchAction(SwitchEntity):
         self._available = True
         self._client = Client(url, username, password)
 
+        self._client.addCache(self._module)
+
 
         # Check if we can get status
         try:
-            self._state = self._client.dfpStatus(self._item)
+            if self._module == "dfp":
+                self._state = self._client.dfpStatus(self._item)
         except requests.HTTPError as e:
             _LOGGER.error("Resource not found: %s", e)
         except KeyError:
@@ -160,11 +162,10 @@ class DFPSwitchAction(SwitchEntity):
         try:
             if self._module == "dfp":
                 self._state = self._client.dfpStatus(self._item)
-                self._available = True
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._url)
-            self._available = False
         except Exception as e:
             _LOGGER.error("Error when update %s", e)
-            self._available = False
+        
+        self._available = self._client.isAvailable()
 

@@ -1,6 +1,7 @@
 import logging
 import requests
 import time
+import threading
 from .singleton import Singleton
 
 class Client(metaclass=Singleton):
@@ -11,9 +12,12 @@ class Client(metaclass=Singleton):
     _token = None
     _client = None
     _token_expiration = None
+    _cache = {}
+    _cache_refresh = 1000
+    _available = False
 
 
-    def __init__(self, url, username, password):
+    def __init__(self, url, username, password, cache_refresh = None):
         if url is None or not url:
             raise ValueError("URL must be a string")
         if username is None or not username:
@@ -24,8 +28,20 @@ class Client(metaclass=Singleton):
         self._url = url
         self._username = username
         self._password = password
+        self.cache = {}
+
+        if cache_refresh is not None:
+            self._cache_refresh = cache_refresh
 
         self.getAccessToken()
+
+        x = threading.Thread(target=self._updateCache)
+        x.start()
+    
+    def addCache(self, module):
+        if module not in ["dfp", "dfpIO", "tfp", "tfpIO"]:
+            raise ValueError("Module must be: dfp, dfpIO, tfp or tfpIO")
+        self.cache[module] = {}
     
     def getAccessToken(self):
         payload = {
@@ -70,18 +86,57 @@ class Client(metaclass=Singleton):
 
         logging.info("Run action %s successfully: %s", action, r.text)
     
-    @Decorators.refreshToken
+    
     def dfpStatus(self, item):
         if item is None or not item:
             raise ValueError("Item must be a string")
+
+        # Check if value is managed by cache
+        if "dfp" in self._cache:
+            return self._cache["dfp"][item]
+        else:
+            return self._dfpStatus()[item]
+    
+    def dfpIO(self, item):
+        if item is None or not item:
+            raise ValueError("Item must be a string")
+
+        # Check if value is managed by cache
+        if "dfpIO" in self._cache:
+            return self._cache["dfpIO"][item]
+        else:
+            return self._dfpIO()[item]
+
+    def isAvailable(self):
+        return self._available
         
+    def _updateCache(self):
+        while True:
+            try:
+                for module in self._cache:
+                    if module == "dfp":
+                        self._cache[module] = self._dfpStatus()
+                    elif module == "dfpIO":
+                        self._cache[module] = self._dfpIO()
+                self._available = True
+            except Exception as e:
+                logging.error("Exception when refresh cash: %s", e)
+                self._available = False
+            
+            time.sleep(self._cache_refresh / 1000)
+
+    @Decorators.refreshToken
+    def _dfpStatus(self):
         r = self._client.get("%s/api/dfps" % self._url)
-
         r.raise_for_status()
-
-        logging.debug("Status: %s", r.text)
-
-        return r.json()["data"]["attributes"][item]
+        return r.json()["data"]["attributes"]
+    
+    @Decorators.refreshToken
+    def _dfpIO(self):
+        r = self._client.get("%s/api/dfps/io" % self._url)
+        r.raise_for_status()
+        return r.json()["data"]["attributes"]
+    
 
 
 
