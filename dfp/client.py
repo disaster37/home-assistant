@@ -28,7 +28,7 @@ class Client(metaclass=Singleton):
         self._url = url
         self._username = username
         self._password = password
-        self.cache = {}
+        self._cache = {}
 
         if cache_refresh is not None:
             self._cache_refresh = cache_refresh
@@ -41,7 +41,9 @@ class Client(metaclass=Singleton):
     def addCache(self, module):
         if module not in ["dfp", "dfpIO", "tfp", "tfpIO"]:
             raise ValueError("Module must be: dfp, dfpIO, tfp or tfpIO")
-        self.cache[module] = {}
+        
+        if module not in self._cache:
+            self._cache[module] = {}
     
     def getAccessToken(self):
         payload = {
