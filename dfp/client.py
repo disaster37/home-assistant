@@ -87,22 +87,22 @@ class Client(metaclass=Singleton):
         logging.info("Run action %s successfully: %s", action, r.text)
     
     
-    def dfpStatus(self, item):
+    def dfpStatus(self, item,  cache = False):
         if item is None or not item:
             raise ValueError("Item must be a string")
 
         # Check if value is managed by cache
-        if "dfp" in self._cache:
+        if cache is True and "dfp" in self._cache:
             return self._cache["dfp"][item]
         else:
             return self._dfpStatus()[item]
     
-    def dfpIO(self, item):
+    def dfpIO(self, item, cache = False):
         if item is None or not item:
             raise ValueError("Item must be a string")
 
         # Check if value is managed by cache
-        if "dfpIO" in self._cache:
+        if cache is True and "dfpIO" in self._cache:
             return self._cache["dfpIO"][item]
         else:
             return self._dfpIO()[item]

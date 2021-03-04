@@ -158,9 +158,9 @@ class DFPBinarySensor(BinarySensorEntity):
         """Get the latest data from aREST API and update the state."""
         try:
             if self._module == "dfp":
-                self._value = self._client.dfpStatus(self._item)
+                self._value = self._client.dfpStatus(self._item, True)
             elif self._module == "dfpIO":
-                self._value = self._client.dfpIO(self._item)
+                self._value = self._client.dfpIO(self._item, True)
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._url)
         except Exception as e:
