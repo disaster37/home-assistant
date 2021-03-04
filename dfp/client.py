@@ -45,6 +45,15 @@ class Client(metaclass=Singleton):
         if module not in self._cache:
             self._cache[module] = {}
     
+    def getFromCache(self, module, item):
+        if module not in ["dfp", "dfpIO", "tfp", "tfpIO"]:
+            raise ValueError("Module must be: dfp, dfpIO, tfp or tfpIO")
+        
+        if len(self._cache[module]) == 0:
+            return None
+        else:
+            return self._cache[module][item]
+    
     def getAccessToken(self):
         payload = {
             "username": self._username,
@@ -95,7 +104,7 @@ class Client(metaclass=Singleton):
 
         # Check if value is managed by cache
         if cache is True and "dfp" in self._cache:
-            return self._cache["dfp"][item]
+            return self.getFromCache("dfp", item)
         else:
             return self._dfpStatus()[item]
     
@@ -105,7 +114,7 @@ class Client(metaclass=Singleton):
 
         # Check if value is managed by cache
         if cache is True and "dfpIO" in self._cache:
-            return self._cache["dfpIO"][item]
+            return self.getFromCache("dfpIO", item)
         else:
             return self._dfpIO()[item]
 
