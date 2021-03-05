@@ -99,6 +99,10 @@ class DFPSwitchAction(SwitchEntity):
         try:
             if self._module == "dfp":
                 self._state = self._client.dfpStatus(self._item)
+            elif self._module == "tfp":
+                self._state = self._client.tfpStatus(self._item)
+            else:
+                raise KeyError("Module must be dfp or tfp")
         except requests.HTTPError as e:
             _LOGGER.error("Resource not found: %s", e)
         except KeyError:
@@ -124,32 +128,33 @@ class DFPSwitchAction(SwitchEntity):
 
     def turn_on(self, **kwargs):
         """Turn the device on."""
-
-        if self._module == "dfp":
-            try:
-                # Turn on
+        try:
+            if self._module == "dfp":
                 self._client.dfpAction(self._action_turn_on)
-            except Exception as e:
-                 _LOGGER.error("Can't turn on function %s/%s at %s: %s", self._module, self._action_turn_off, self._resource, e)
+            elif self._module == "tfp":
+                self._client.tfpAction(self._action_turn_on)
+        except Exception as e:
+            _LOGGER.error("Can't turn on function %s/%s at %s: %s", self._module, self._action_turn_off, self._resource, e)
 
     def turn_off(self, **kwargs):
         """Turn the device off."""
-    
-        if self._action_turn_off == "none":
-            return
-       
-        if self._module == "dfp":
-            try:
-                # Turn on
+        try:
+            if self._action_turn_off == "none":
+                return
+            if self._module == "dfp":
                 self._client.dfpAction(self._action_turn_off)
-            except Exception as e:
-                 _LOGGER.error("Can't turn off function %s/%s at %s: %s", self._module, self._action_turn_off, self._resource, e)
+            elif self._module == "tfp":
+                self._client.tfpAction(self._action_turn_off)
+        except Exception as e:
+                _LOGGER.error("Can't turn off function %s/%s at %s: %s", self._module, self._action_turn_off, self._resource, e)
 
     def update(self):
         """Get the latest data from aREST API and update the state."""
         try:
             if self._module == "dfp":
                 self._state = self._client.dfpStatus(self._item)
+            elif self._module == "tfp":
+                self._state = self._client.tfpStatus(self._item)
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._url)
         except Exception as e:

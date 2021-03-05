@@ -118,6 +118,39 @@ class Client(metaclass=Singleton):
         else:
             return self._dfpIO()[item]
 
+    @Decorators.refreshToken
+    def tfpAction(self, action):
+
+        if action is None or not action:
+            raise ValueError("Action must be a string")
+
+        r = self._client.post("%s/api/tfps/action/%s" % (self._url, action))
+
+        r.raise_for_status()
+
+        logging.info("Run action %s successfully: %s", action, r.text)
+    
+    
+    def tfpStatus(self, item,  cache = False):
+        if item is None or not item:
+            raise ValueError("Item must be a string")
+
+        # Check if value is managed by cache
+        if cache is True and "tfp" in self._cache:
+            return self.getFromCache("tfp", item)
+        else:
+            return self._tfpStatus()[item]
+    
+    def tfpIO(self, item, cache = False):
+        if item is None or not item:
+            raise ValueError("Item must be a string")
+
+        # Check if value is managed by cache
+        if cache is True and "tfpIO" in self._cache:
+            return self.getFromCache("tfpIO", item)
+        else:
+            return self._tfpIO()[item]
+
     def isAvailable(self):
         return self._available
         
@@ -129,6 +162,10 @@ class Client(metaclass=Singleton):
                         self._cache[module] = self._dfpStatus()
                     elif module == "dfpIO":
                         self._cache[module] = self._dfpIO()
+                    elif module == "tfp":
+                        self._cache[module] = self._tfpStatus()
+                    elif module == "tfpIO":
+                        self._cache[module] = self._tfpIO()
                 self._available = True
             except Exception as e:
                 logging.error("Exception when refresh cash: %s", e)
@@ -145,6 +182,18 @@ class Client(metaclass=Singleton):
     @Decorators.refreshToken
     def _dfpIO(self):
         r = self._client.get("%s/api/dfps/io" % self._url)
+        r.raise_for_status()
+        return r.json()["data"]["attributes"]
+
+    @Decorators.refreshToken
+    def _tfpStatus(self):
+        r = self._client.get("%s/api/tfps" % self._url)
+        r.raise_for_status()
+        return r.json()["data"]["attributes"]
+    
+    @Decorators.refreshToken
+    def _tfpIO(self):
+        r = self._client.get("%s/api/tfps/io" % self._url)
         r.raise_for_status()
         return r.json()["data"]["attributes"]
     

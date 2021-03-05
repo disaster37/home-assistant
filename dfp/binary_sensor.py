@@ -130,7 +130,12 @@ class DFPBinarySensor(BinarySensorEntity):
                 self._value = self._client.dfpStatus(self._item)
             elif self._module == "dfpIO":
                 self._value = self._client.dfpIO(self._item)
-
+            elif self._module == "tfp":
+                self._value = self._client.tfpStatus(self._item)
+            elif self._module == "tfpIO":
+                self._value = self._client.tfpIO(self._item)
+            else:
+                raise KeyError("Module must be dfp, dfpIO, tfp or tfpIO")
         except requests.HTTPError as e:
             _LOGGER.error("Resource not found: %s", e)
         except KeyError:
@@ -161,6 +166,10 @@ class DFPBinarySensor(BinarySensorEntity):
                 self._value = self._client.dfpStatus(self._item, True)
             elif self._module == "dfpIO":
                 self._value = self._client.dfpIO(self._item, True)
+            elif self._module == "tfp":
+                self._value = self._client.tfpStatus(self._item, True)
+            elif self._module == "tfpIO":
+                self._value = self._client.tfpIO(self._item, True)
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._url)
         except Exception as e:
