@@ -169,7 +169,10 @@ class Client(metaclass=Singleton):
                 self._available = True
             except Exception as e:
                 logging.error("Exception when refresh cash: %s", e)
+                logging.error("Wait 30s")
                 self._available = False
+                time.sleep(30)
+
             
             time.sleep(self._cache_refresh / 1000)
 
