@@ -158,9 +158,9 @@ class DFPSwitchAction(SwitchEntity):
             return
         try:
             if self._module == "dfp":
-                self._state = self._client.dfpStatus(self._item)
+                self._state = self._client.dfpStatus(self._item, True)
             elif self._module == "tfp":
-                self._state = self._client.tfpStatus(self._item)
+                self._state = self._client.tfpStatus(self._item, True)
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._url)
         except Exception as e:
