@@ -96,6 +96,8 @@ class DFPSwitchAction(SwitchEntity):
 
 
         # Check if we can get status
+        if self._item == "none":
+            return
         try:
             if self._module == "dfp":
                 self._state = self._client.dfpStatus(self._item)
@@ -103,6 +105,8 @@ class DFPSwitchAction(SwitchEntity):
                 self._state = self._client.tfpStatus(self._item)
             else:
                 raise KeyError("Module must be dfp or tfp")
+        except requests.exceptions.ConnectionError:
+            _LOGGER.warning("No route to device %s", self._url)
         except requests.HTTPError as e:
             _LOGGER.error("Resource not found: %s", e)
         except KeyError:
@@ -150,6 +154,8 @@ class DFPSwitchAction(SwitchEntity):
 
     def update(self):
         """Get the latest data from aREST API and update the state."""
+        if self._item == "none":
+            return
         try:
             if self._module == "dfp":
                 self._state = self._client.dfpStatus(self._item)

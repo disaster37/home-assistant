@@ -132,6 +132,8 @@ class DFPSensor(Entity):
                 self._value = self._client.tfpStatus(self._item)
             else:
                 raise KeyError("Module must be dfp or tfp")
+        except requests.exceptions.ConnectionError:
+            _LOGGER.warning("No route to device %s", self._url)
         except requests.HTTPError as e:
             _LOGGER.error("Resource not found: %s", e)
         except KeyError:

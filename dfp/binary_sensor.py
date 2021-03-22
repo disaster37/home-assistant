@@ -136,6 +136,8 @@ class DFPBinarySensor(BinarySensorEntity):
                 self._value = self._client.tfpIO(self._item)
             else:
                 raise KeyError("Module must be dfp, dfpIO, tfp or tfpIO")
+        except requests.exceptions.ConnectionError:
+            _LOGGER.warning("No route to device %s", self._url)
         except requests.HTTPError as e:
             _LOGGER.error("Resource not found: %s", e)
         except KeyError:
