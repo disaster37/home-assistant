@@ -2,7 +2,9 @@ import logging
 import requests
 import time
 import threading
+from threading import RLock
 from .singleton import Singleton
+
 
 class Client(metaclass=Singleton):
 
@@ -15,6 +17,7 @@ class Client(metaclass=Singleton):
     _cache = {}
     _cache_refresh = 1000
     _available = False
+    _lock = RLock()
 
 
     def __init__(self, url, username, password, cache_refresh = None):
@@ -43,7 +46,9 @@ class Client(metaclass=Singleton):
             raise ValueError("Module must be: dfp, dfpIO, tfp or tfpIO")
         
         if module not in self._cache:
+            self._lock.acquire()
             self._cache[module] = {}
+            self._lock.release()
     
     def getFromCache(self, module, item):
         if module not in ["dfp", "dfpIO", "tfp", "tfpIO"]:
@@ -156,6 +161,7 @@ class Client(metaclass=Singleton):
         
     def _updateCache(self):
         while True:
+            self._lock.acquire()
             try:
                 for module in self._cache:
                     if module == "dfp":
@@ -172,6 +178,8 @@ class Client(metaclass=Singleton):
                 logging.error("Wait 30s")
                 self._available = False
                 time.sleep(30)
+            finally:
+                self._lock.release()
 
             
             time.sleep(self._cache_refresh / 1000)
