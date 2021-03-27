@@ -32,11 +32,10 @@ class Client(metaclass=Singleton):
         self._username = username
         self._password = password
         self._cache = {}
+        self._token_expiration = time.time()
 
         if cache_refresh is not None:
             self._cache_refresh = cache_refresh
-
-        self.getAccessToken()
 
         x = threading.Thread(target=self._updateCache)
         x.start()
@@ -72,7 +71,7 @@ class Client(metaclass=Singleton):
 
         self._client = requests.Session()
         self._client.headers.update({"Authorization": "Bearer %s" % self._token})
-        self._token_expiration = time.time() + 3500
+        self._token_expiration = time.time() + 18000
 
         logging.debug("Auth successfully")
 
@@ -84,7 +83,10 @@ class Client(metaclass=Singleton):
             # the JWT and refresh if necessary
             def wrapper(api,*args,**kwargs):
                 if time.time() > api._token_expiration:
-                    api.getAccessToken()
+                    try:
+                        api.getAccessToken()
+                    except Exception as e:
+                        logging.error(e)
                 return decorated(api,*args,**kwargs)
 
             return wrapper
