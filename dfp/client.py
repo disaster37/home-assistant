@@ -175,13 +175,13 @@ class Client(metaclass=Singleton):
                     elif module == "tfpIO":
                         self._cache[module] = self._tfpIO()
                 self._available = True
+                self._lock.release()
             except Exception as e:
                 logging.error("Exception when refresh cash: %s", e)
                 logging.error("Wait 30s")
                 self._available = False
-                time.sleep(30)
-            finally:
                 self._lock.release()
+                time.sleep(30)
 
             
             time.sleep(self._cache_refresh / 1000)
