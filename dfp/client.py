@@ -163,6 +163,7 @@ class Client(metaclass=Singleton):
         
     def _updateCache(self):
         while True:
+            logging.warning("Update cash - Lock")
             self._lock.acquire()
             try:
                 for module in self._cache:
@@ -182,6 +183,8 @@ class Client(metaclass=Singleton):
                 self._available = False
                 self._lock.release()
                 time.sleep(30)
+            finally:
+              logging.warning("Update cash - Unlock")
 
             
             time.sleep(self._cache_refresh / 1000)
