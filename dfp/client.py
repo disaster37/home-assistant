@@ -39,6 +39,8 @@ class Client(metaclass=Singleton):
 
         x = threading.Thread(target=self._updateCache)
         x.start()
+
+        logging.warning("Call singleton constructor")
     
     def addCache(self, module):
         if module not in ["dfp", "dfpIO", "tfp", "tfpIO"]:
