@@ -176,6 +176,7 @@ class Client(metaclass=Singleton):
                     elif module == "tfpIO":
                         self._cache[module] = self._tfpIO()
                 self._available = True
+                logging.warning("Update cash - Finish")
                 self._lock.release()
             except Exception as e:
                 logging.error("Exception when refresh cash: %s", e)
