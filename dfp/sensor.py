@@ -122,7 +122,6 @@ class DFPSensor(Entity):
         self._renderer = renderer
         self._available = True
 
-        self._client.addCache(self._module)
 
         # Check if we can get status
         try:
@@ -167,13 +166,15 @@ class DFPSensor(Entity):
         """Get the latest data from aREST API and update the state."""
         try:
             if self._module == "dfp":
-                self._value = self._client.dfpStatus(self._item, True)
+                self._value = self._client.dfpStatus(self._item)
             elif self._module == "tfp":
-                self._value = self._client.tfpStatus(self._item, True)
+                self._value = self._client.tfpStatus(self._item)
+            
+            self._available = True
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._url)
+            self._available = False
         except Exception as e:
             _LOGGER.error("Error when update %s", e)
-
-        self._available = self._client.isAvailable()
+            self._available = False
 

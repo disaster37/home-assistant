@@ -92,8 +92,6 @@ class DFPSwitchAction(SwitchEntity):
         self._available = True
         self._client = Client(url, username, password)
 
-        self._client.addCache(self._module)
-
 
         # Check if we can get status
         if self._item == "none":
@@ -158,13 +156,14 @@ class DFPSwitchAction(SwitchEntity):
             return
         try:
             if self._module == "dfp":
-                self._state = self._client.dfpStatus(self._item, True)
+                self._state = self._client.dfpStatus(self._item)
             elif self._module == "tfp":
-                self._state = self._client.tfpStatus(self._item, True)
+                self._state = self._client.tfpStatus(self._item)
+            
+            self._available = True
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._url)
+            self._available = False
         except Exception as e:
             _LOGGER.error("Error when update %s", e)
-        
-        self._available = self._client.isAvailable()
-
+            self._available = False
