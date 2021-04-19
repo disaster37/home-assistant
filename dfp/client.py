@@ -12,7 +12,7 @@ class Client(metaclass=Singleton):
     _token = None
     _client = None
     _token_expiration = None
-    _timeout
+    _timeout = None
 
 
     def __init__(self, url, username, password):
