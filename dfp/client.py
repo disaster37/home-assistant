@@ -29,6 +29,8 @@ class Client(metaclass=Singleton):
         self._token_expiration = time.time()
         self._client = requests.Session()
         self._timeout = 10
+
+        self._client.headers.update({"Content-Type": "application/json"})
     
     
     
@@ -37,7 +39,7 @@ class Client(metaclass=Singleton):
             "username": self._username,
             "password": self._password
         }
-        r = requests.post("%s/token-auth" % self._url, data = payload, timeout =  self._timeout)
+        r = requests.post("%s/token-auth" % self._url, json = payload, timeout =  self._timeout)
 
         r.raise_for_status()
 
