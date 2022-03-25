@@ -11,7 +11,6 @@ from homeassistant.const import (
     CONF_RESOURCE,
     CONF_UNIT_OF_MEASUREMENT,
     CONF_VALUE_TEMPLATE,
-    HTTP_OK,
 )
 from homeassistant.exceptions import TemplateError
 import homeassistant.helpers.config_validation as cv
