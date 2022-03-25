@@ -3,7 +3,7 @@ import requests
 import voluptuous as vol
 
 from homeassistant.components.switch import PLATFORM_SCHEMA, SwitchEntity
-from homeassistant.const import CONF_NAME, CONF_RESOURCE, HTTP_OK
+from homeassistant.const import CONF_NAME, CONF_RESOURCE
 import homeassistant.helpers.config_validation as cv
 
 from .client import Client
