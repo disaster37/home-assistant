@@ -174,6 +174,8 @@ class DFPSensor(Entity):
                 self._value = self._client.dfpStatus(self._item)
             elif self._module == "tfp":
                 self._value = self._client.tfpStatus(self._item)
+            elif self._module == "tank":
+                self._value = self._client.tankStatus(self._item, self._submodule)
             
             self._available = True
         except requests.exceptions.ConnectionError:
