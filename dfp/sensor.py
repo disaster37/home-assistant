@@ -27,6 +27,7 @@ CONF_SENSORS = "sensors"
 CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
 CONF_MODULE = "module"
+CONF_SUBMODULE = "submodule"
 CONF_STATE = "state"
 
 DEFAULT_NAME = "DFP sensor"
@@ -35,6 +36,7 @@ SENSOR_FUNCTION_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_MODULE): cv.string,
+        vol.Optional(CONF_SUBMODULE): cv.string,
         vol.Required(CONF_STATE): cv.string,
         vol.Optional(CONF_UNIT_OF_MEASUREMENT): cv.string,
         vol.Optional(CONF_VALUE_TEMPLATE): cv.template
@@ -87,6 +89,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
                 config[CONF_PASSWORD],
                 sensor.get(CONF_MODULE),
                 sensor.get(CONF_STATE),
+                sensor.get(CONF_SUBMODULE),
                 sensor.get(CONF_UNIT_OF_MEASUREMENT),
                 renderer
             )
@@ -109,10 +112,11 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 class DFPSensor(Entity):
     """Representation of an DFP switch."""
 
-    def __init__(self, location,  name, url, username, password, module, state, unit_of_measurement=None, renderer=None):
+    def __init__(self, location,  name, url, username, password, module, state, submodule=None, unit_of_measurement=None, renderer=None):
         """Initialize the switch."""
         self._name = f"{location.title()} {name.title()}"
         self._module = module
+        self._submodule = submodule
         self._item = state
         self._url = url
         self._value = None
@@ -128,6 +132,8 @@ class DFPSensor(Entity):
                 self._value = self._client.dfpStatus(self._item)
             elif self._module == "tfp":
                 self._value = self._client.tfpStatus(self._item)
+            elif self._module == "tank":
+                self._value = self._client.tankStatus(self._item, self._submodule)
             else:
                 raise KeyError("Module must be dfp or tfp")
         except requests.exceptions.ConnectionError:

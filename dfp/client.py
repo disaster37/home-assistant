@@ -118,6 +118,17 @@ class Client(metaclass=Singleton):
         r = self._client.get("%s/api/tfps" % self._url, timeout =  self._timeout)
         r.raise_for_status()
         return r.json()["data"]["attributes"][item]
+
+    @Decorators.refreshToken
+    def tankStatus(self, item, name,  cache = False):
+        if item is None or not item:
+            raise ValueError("Item must be a string")
+        if name is None or not name:
+            raise ValueError("Name must be a string")
+
+        r = self._client.get("%s/api/tanks/%s" % (self._url, name), timeout =  self._timeout)
+        r.raise_for_status()
+        return r.json()["data"]["attributes"][item]
     
     @Decorators.refreshToken
     def tfpIO(self, item, cache = False):
