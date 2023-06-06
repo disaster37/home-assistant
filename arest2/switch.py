@@ -196,12 +196,19 @@ class ArestSwitchPin(ArestSwitchBase):
         try:
             request = requests.get(f"{self._resource}/digital/{self._pin}", timeout=10)
             status_value = int(self.invert)
-            self._attr_is_on = request.json()["return_value"] != status_value
+            current_state = request.json()["return_value"] != status_value
+            if self._attr_is_on != current_state:
+                _LOGGER.info("Reconcile with expected pin state %s", self._resource)
+                self.__set_pin_output()
+                if self._attr_is_on is True:
+                    self.turn_on()
+                else:
+                    self.turn_off()
             if self._attr_available is False:
                 self._attr_available = True
                 self.__set_pin_output()
         except requests.exceptions.ConnectionError:
-            _LOGGER.warning("No route to device %s", self._resource)
+            
             self._attr_available = False
 
     def __set_pin_output(self) -> None:
