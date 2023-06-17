@@ -45,8 +45,6 @@ def setup_platform(
 ) -> None:
     """Set up the aREST binary sensor."""
     resource = config[CONF_RESOURCE]
-    pin = config[CONF_PIN]
-    variable = config[CONF_VARIABLE]
     device_class = config.get(CONF_DEVICE_CLASS)
 
     try:
@@ -60,33 +58,37 @@ def setup_platform(
         _LOGGER.error("No route to device at %s", resource)
         return
 
-    if pin is not None:
-        add_entities(
-            [
-                ArestBinarySensorPin(
-                    ArestDataPin(resource, pin),
-                    resource,
-                    config.get(CONF_NAME, response[CONF_NAME]),
-                    device_class,
-                    pin,
-                )
-            ],
-            True,
-        )
-    
-    if variable is not None:
-        add_entities(
-            [
-                ArestBinarySensorVariable(
-                    ArestDataVariable(resource, variable),
-                    resource,
-                    config.get(CONF_NAME, response[CONF_NAME]),
-                    device_class,
-                    variable,
-                )
-            ],
-            True,
-        )
+    if CONF_PIN in config:
+        pin = config[CONF_PIN]
+        if pin is not None:
+            add_entities(
+                [
+                    ArestBinarySensorPin(
+                        ArestDataPin(resource, pin),
+                        resource,
+                        config.get(CONF_NAME, response[CONF_NAME]),
+                        device_class,
+                        pin,
+                    )
+                ],
+                True,
+            )
+
+    if CONF_VARIABLE in config:
+        variable = config[CONF_VARIABLE]
+        if variable is not None:
+            add_entities(
+                [
+                    ArestBinarySensorVariable(
+                        ArestDataVariable(resource, variable),
+                        resource,
+                        config.get(CONF_NAME, response[CONF_NAME]),
+                        device_class,
+                        variable,
+                    )
+                ],
+                True,
+            )
 
 
 class ArestBinarySensorPin(BinarySensorEntity):
@@ -108,6 +110,7 @@ class ArestBinarySensorPin(BinarySensorEntity):
         """Get the latest data from aREST API."""
         self.arest.update()
         self._attr_is_on = bool(self.arest.data.get("state"))
+
 
 class ArestBinarySensorVariable(BinarySensorEntity):
     """Implement an aREST binary sensor for a variable."""
@@ -131,6 +134,7 @@ class ArestBinarySensorVariable(BinarySensorEntity):
         self.arest.update()
         self._attr_is_on = bool(self.arest.data.get("state"))
 
+
 class ArestDataPin:
     """Class for handling the data retrieval for pins."""
 
@@ -148,6 +152,7 @@ class ArestDataPin:
             self.data = {"state": response.json()["return_value"]}
         except requests.exceptions.ConnectionError:
             _LOGGER.error("No route to device '%s'", self._resource)
+
 
 class ArestDataVariable:
     """Class for handling the data retrieval for variable."""
