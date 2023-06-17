@@ -45,6 +45,8 @@ def setup_platform(
 ) -> None:
     """Set up the aREST binary sensor."""
     resource = config[CONF_RESOURCE]
+    pin = config[CONF_PIN]
+    variable = config[CONF_VARIABLE]
     device_class = config.get(CONF_DEVICE_CLASS)
 
     try:
@@ -58,7 +60,6 @@ def setup_platform(
         _LOGGER.error("No route to device at %s", resource)
         return
 
-    pin = config[CONF_PIN]
     if pin is not None:
         add_entities(
             [
@@ -73,7 +74,6 @@ def setup_platform(
             True,
         )
     
-    variable = config[CONF_VARIABLE]
     if variable is not None:
         add_entities(
             [
