@@ -65,7 +65,7 @@ def setup_platform(
                     ArestBinarySensorPin(
                         ArestDataPin(resource, pin),
                         resource,
-                        config.get(CONF_NAME, response[CONF_NAME]),
+                        config.get(CONF_NAME),
                         device_class,
                         pin,
                     )
@@ -81,7 +81,7 @@ def setup_platform(
                     ArestBinarySensorVariable(
                         ArestDataVariable(resource, variable),
                         resource,
-                        config.get(CONF_NAME, response[CONF_NAME]),
+                        config.get(CONF_NAME),
                         device_class,
                         variable,
                     )

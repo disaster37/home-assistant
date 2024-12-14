@@ -51,6 +51,8 @@ def setup_platform(
 ) -> None:
     """Set up the aREST switches."""
     resource = config[CONF_RESOURCE]
+    isReachable = True
+    location = config[CONF_NAME]
 
     try:
         response = requests.get(resource, timeout=10)
@@ -61,6 +63,10 @@ def setup_platform(
         return
     except requests.exceptions.ConnectionError:
         _LOGGER.error("No route to device at %s", resource)
+        isReachable = False
+
+    if isReachable is True:
+        location =  response.json()[CONF_NAME]
 
     dev: list[SwitchEntity] = []
     pins = config[CONF_PINS]
@@ -68,7 +74,7 @@ def setup_platform(
         dev.append(
             ArestSwitchPin(
                 resource,
-                config.get(CONF_NAME, response.json()[CONF_NAME]),
+                config.get(CONF_NAME),
                 pin.get(CONF_NAME),
                 pinnum,
                 pin[CONF_INVERT],
@@ -80,7 +86,7 @@ def setup_platform(
         dev.append(
             ArestSwitchFunction(
                 resource,
-                config.get(CONF_NAME, response.json()[CONF_NAME]),
+                config.get(CONF_NAME),
                 func.get(CONF_NAME),
                 funcname,
             )
