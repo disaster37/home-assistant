@@ -20,7 +20,6 @@ _LOGGER = logging.getLogger(__name__)
 CONF_FUNCTIONS = "functions"
 CONF_PINS = "pins"
 CONF_INVERT = "invert"
-
 DEFAULT_NAME = "aREST switch"
 
 PIN_FUNCTION_SCHEMA = vol.Schema(
@@ -62,7 +61,6 @@ def setup_platform(
         return
     except requests.exceptions.ConnectionError:
         _LOGGER.error("No route to device at %s", resource)
-        return
 
     dev: list[SwitchEntity] = []
     pins = config[CONF_PINS]

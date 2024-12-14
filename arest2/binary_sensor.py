@@ -56,7 +56,6 @@ def setup_platform(
         return
     except requests.exceptions.ConnectionError:
         _LOGGER.error("No route to device at %s", resource)
-        return
 
     if CONF_PIN in config:
         pin = config[CONF_PIN]

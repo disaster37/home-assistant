@@ -99,8 +99,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
             )
             return False
         except requests.exceptions.ConnectionError:
-            _LOGGER.error("No route to device at %s", config[CONF_RESOURCE])
-            return False    
+            _LOGGER.error("No route to device at %s", config[CONF_RESOURCE])   
 
 
         dev.append(dfpSensor)
