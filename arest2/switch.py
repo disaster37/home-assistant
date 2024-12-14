@@ -51,7 +51,7 @@ def setup_platform(
 ) -> None:
     """Set up the aREST switches."""
     resource = config[CONF_RESOURCE]
-    isReachable = True
+    isAvailable = True
     location = config[CONF_NAME]
 
     try:
@@ -63,9 +63,9 @@ def setup_platform(
         return
     except requests.exceptions.ConnectionError:
         _LOGGER.error("No route to device at %s", resource)
-        isReachable = False
+        isAvailable = False
 
-    if isReachable is True:
+    if isAvailable is True:
         location =  response.json()[CONF_NAME]
 
     dev: list[SwitchEntity] = []
@@ -78,6 +78,7 @@ def setup_platform(
                 pin.get(CONF_NAME),
                 pinnum,
                 pin[CONF_INVERT],
+                isAvailable,
             )
         )
 
@@ -89,6 +90,7 @@ def setup_platform(
                 config.get(CONF_NAME),
                 func.get(CONF_NAME),
                 funcname,
+                isAvailable,
             )
         )
 
@@ -98,34 +100,35 @@ def setup_platform(
 class ArestSwitchBase(SwitchEntity):
     """Representation of an aREST switch."""
 
-    def __init__(self, resource, location, name):
+    def __init__(self, resource, location, name, available):
         """Initialize the switch."""
         self._resource = resource
         self._attr_name = f"{location.title()} {name.title()}"
-        self._attr_available = True
+        self._attr_available = available
         self._attr_is_on = False
 
 
 class ArestSwitchFunction(ArestSwitchBase):
     """Representation of an aREST switch."""
 
-    def __init__(self, resource, location, name, func):
+    def __init__(self, resource, location, name, func, available):
         """Initialize the switch."""
-        super().__init__(resource, location, name)
+        super().__init__(resource, location, name, available)
         self._func = func
 
-        request = requests.get(f"{self._resource}/{self._func}", timeout=10)
+        if available is True:
+            request = requests.get(f"{self._resource}/{self._func}", timeout=10)
 
-        if request.status_code != HTTPStatus.OK:
-            _LOGGER.error("Can't find function")
-            return
+            if request.status_code != HTTPStatus.OK:
+                _LOGGER.error("Can't find function")
+                return
 
-        try:
-            request.json()["return_value"]
-        except KeyError:
-            _LOGGER.error("No return_value received")
-        except ValueError:
-            _LOGGER.error("Response invalid")
+            try:
+                request.json()["return_value"]
+            except KeyError:
+                _LOGGER.error("No return_value received")
+            except ValueError:
+                _LOGGER.error("Response invalid")
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
@@ -165,13 +168,18 @@ class ArestSwitchFunction(ArestSwitchBase):
 class ArestSwitchPin(ArestSwitchBase):
     """Representation of an aREST switch. Based on digital I/O."""
 
-    def __init__(self, resource, location, name, pin, invert) -> None:
+    def __init__(self, resource, location, name, pin, invert, available) -> None:
         """Initialize the switch."""
-        super().__init__(resource, location, name)
+        super().__init__(resource, location, name, available)
         self._pin = pin
         self.invert = invert
 
-        self.__set_pin_output()
+        if available is True:
+            try:
+                self.__set_pin_output()
+            except requests.exceptions.ConnectionError:
+                _LOGGER.warning("No route to device %s", self._resource)
+                self._attr_available = False
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
@@ -212,7 +220,6 @@ class ArestSwitchPin(ArestSwitchBase):
                 self._attr_available = True
                 self.__set_pin_output()
         except requests.exceptions.ConnectionError:
-            
             self._attr_available = False
 
     def __set_pin_output(self) -> None:
