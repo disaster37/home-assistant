@@ -117,18 +117,11 @@ class ArestSwitchFunction(ArestSwitchBase):
         self._func = func
 
         if available is True:
-            request = requests.get(f"{self._resource}/{self._func}", timeout=10)
-
-            if request.status_code != HTTPStatus.OK:
-                _LOGGER.error("Can't find function")
-                return
-
             try:
-                request.json()["return_value"]
-            except KeyError:
-                _LOGGER.error("No return_value received")
-            except ValueError:
-                _LOGGER.error("Response invalid")
+                self.__check_function()
+            except requests.exceptions.ConnectionError:
+                _LOGGER.warning("No route to device %s", self._resource)
+                self._attr_available = False
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
@@ -158,11 +151,34 @@ class ArestSwitchFunction(ArestSwitchBase):
         """Get the latest data from aREST API and update the state."""
         try:
             request = requests.get(f"{self._resource}/{self._func}", timeout=10)
-            self._attr_is_on = request.json()["return_value"] != 0
-            self._attr_available = True
+            status_value = int(self.invert)
+            current_state = request.json()["return_value"] != status_value
+            if self._attr_is_on != current_state:
+                _LOGGER.info("Reconcile with expected pin state %s", self._resource)
+                if self._attr_is_on is True:
+                    self.turn_on()
+                else:
+                    self.turn_off()
+            if self._attr_available is False:
+                self._attr_available = True
+                
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._resource)
             self._attr_available = False
+    
+    def __check_function(self) -> None:
+        request = requests.get(f"{self._resource}/{self._func}", timeout=10)
+
+        if request.status_code != HTTPStatus.OK:
+            _LOGGER.error("Can't find function")
+            return
+
+        try:
+            request.json()["return_value"]
+        except KeyError:
+            _LOGGER.error("No return_value received")
+        except ValueError:
+            _LOGGER.error("Response invalid")
 
 
 class ArestSwitchPin(ArestSwitchBase):
