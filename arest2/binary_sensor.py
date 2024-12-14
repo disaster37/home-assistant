@@ -46,6 +46,7 @@ def setup_platform(
     """Set up the aREST binary sensor."""
     resource = config[CONF_RESOURCE]
     device_class = config.get(CONF_DEVICE_CLASS)
+    isAvailable = True
 
     try:
         response = requests.get(resource, timeout=10).json()
@@ -56,6 +57,7 @@ def setup_platform(
         return
     except requests.exceptions.ConnectionError:
         _LOGGER.error("No route to device at %s", resource)
+        isAvailable = False
 
     if CONF_PIN in config:
         pin = config[CONF_PIN]
@@ -63,11 +65,10 @@ def setup_platform(
             add_entities(
                 [
                     ArestBinarySensorPin(
-                        ArestDataPin(resource, pin),
                         resource,
                         config.get(CONF_NAME),
-                        device_class,
                         pin,
+                        isAvailable,
                     )
                 ],
                 True,
@@ -79,11 +80,10 @@ def setup_platform(
             add_entities(
                 [
                     ArestBinarySensorVariable(
-                        ArestDataVariable(resource, variable),
                         resource,
                         config.get(CONF_NAME),
-                        device_class,
                         variable,
+                        isAvailable,
                     )
                 ],
                 True,
@@ -93,80 +93,82 @@ def setup_platform(
 class ArestBinarySensorPin(BinarySensorEntity):
     """Implement an aREST binary sensor for a pin."""
 
-    def __init__(self, arest, resource, name, device_class, pin):
+    def __init__(self, resource, name, pin, available):
+
+        if pin is None:
+            _LOGGER.error("You must set the pin number for %s", resource)
+            raise KeyError("You must set the pin number")
+
         """Initialize the aREST device."""
-        self.arest = arest
+        self._resource = resource
+        self._pin = pin
         self._attr_name = name
-        self._attr_device_class = device_class
         self._attr_is_on = False
+        self._attr_available = available
 
-        if pin is not None:
-            request = requests.get(f"{resource}/mode/{pin}/i", timeout=10)
-            if request.status_code != HTTPStatus.OK:
-                _LOGGER.error("Can't set mode of %s", resource)
+        if available is True:
+            try:
+                self.__set_pin_input()
+            except requests.exceptions.ConnectionError:
+                _LOGGER.warning("No route to device %s", self._resource)
+                self._attr_available = False
+            
 
+    @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update(self) -> None:
         """Get the latest data from aREST API."""
-        self.arest.update()
-        self._attr_is_on = bool(self.arest.data.get("state"))
+        try:
+            response = requests.get(f"{self._resource}/digital/{self._pin}", timeout=10)
+            self._attr_is_on = bool(response.json()["return_value"])
+            if self._attr_available is False:
+                self.__set_pin_input()
+        except requests.exceptions.ConnectionError:
+            _LOGGER.error("No route to device '%s'", self._resource)
+    
+    def __set_pin_input(self) -> None:
+        request = requests.get(f"{self._resource}/mode/{self._pin}/i", timeout=10)
+        if request.status_code != HTTPStatus.OK:
+            _LOGGER.error("Can't set mode")
+            self._attr_available = False
+        else:
+            self._attr_available = True
 
 
 class ArestBinarySensorVariable(BinarySensorEntity):
     """Implement an aREST binary sensor for a variable."""
 
-    def __init__(self, arest, resource, name, device_class, variable):
+    def __init__(self, resource, name, variable, available):
+        if variable is None:
+            _LOGGER.error("You must set the variable for %s", resource)
+            raise KeyError("You must set the variable name")
+
         """Initialize the aREST device."""
-        self.arest = arest
-        self._attr_name = name
-        self._attr_device_class = device_class
-        self._attr_is_on = False
-
-        if variable is not None:
-            request = requests.get(f"{resource}/{variable}", timeout=10)
-            if request.status_code != HTTPStatus.OK:
-                _LOGGER.error("Problem appear when get variable %s", resource)
-            if request.json()[variable] is None:
-                _LOGGER.error("Variable not found %s", resource)
-
-    def update(self) -> None:
-        """Get the latest data from aREST API."""
-        self.arest.update()
-        self._attr_is_on = bool(self.arest.data.get("state"))
-
-
-class ArestDataPin:
-    """Class for handling the data retrieval for pins."""
-
-    def __init__(self, resource, pin):
-        """Initialize the aREST data object."""
-        self._resource = resource
-        self._pin = pin
-        self.data = {}
-
-    @Throttle(MIN_TIME_BETWEEN_UPDATES)
-    def update(self) -> None:
-        """Get the latest data from aREST device."""
-        try:
-            response = requests.get(f"{self._resource}/digital/{self._pin}", timeout=10)
-            self.data = {"state": response.json()["return_value"]}
-        except requests.exceptions.ConnectionError:
-            _LOGGER.error("No route to device '%s'", self._resource)
-
-
-class ArestDataVariable:
-    """Class for handling the data retrieval for variable."""
-
-    def __init__(self, resource, variable):
-        """Initialize the aREST data object."""
         self._resource = resource
         self._variable = variable
-        self.data = {}
+        self._attr_name = name
+        self._attr_is_on = False
+        self._attr_available = available
+
+        if available is True:
+            self.__check_variable()
+
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update(self) -> None:
-        """Get the latest data from aREST device."""
+        """Get the latest data from aREST API."""
         try:
             response = requests.get(f"{self._resource}/{self._variable}", timeout=10)
-            self.data = {"state": response.json()[self._variable]}
+            self._attr_is_on = bool(response.json()[self._variable])
+            if self._attr_available is False:
+                self._attr_available = True
         except requests.exceptions.ConnectionError:
             _LOGGER.error("No route to device '%s'", self._resource)
+            self._attr_available = False
+
+    def __check_variable(self) -> None:
+        request = requests.get(f"{resource}/{variable}", timeout=10)
+        if request.status_code != HTTPStatus.OK:
+            _LOGGER.error("Problem appear when get variable %s", resource)
+        if request.json()[variable] is None:
+            _LOGGER.error("Variable not found %s", resource)
+

@@ -165,7 +165,7 @@ class DFPSensor(Entity):
         """Return the state of the sensor."""
         return self._renderer(self._value)
 
-
+    @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Get the latest data from aREST API and update the state."""
         try:

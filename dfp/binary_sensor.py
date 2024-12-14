@@ -157,6 +157,7 @@ class DFPBinarySensor(BinarySensorEntity):
         return self._value
     
 
+    @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update(self):
         """Get the latest data from aREST API and update the state."""
         try:

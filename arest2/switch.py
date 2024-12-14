@@ -52,7 +52,6 @@ def setup_platform(
     """Set up the aREST switches."""
     resource = config[CONF_RESOURCE]
     isAvailable = True
-    location = config[CONF_NAME]
 
     try:
         response = requests.get(resource, timeout=10)
@@ -64,9 +63,6 @@ def setup_platform(
     except requests.exceptions.ConnectionError:
         _LOGGER.error("No route to device at %s", resource)
         isAvailable = False
-
-    if isAvailable is True:
-        location =  response.json()[CONF_NAME]
 
     dev: list[SwitchEntity] = []
     pins = config[CONF_PINS]
@@ -147,6 +143,7 @@ class ArestSwitchFunction(ArestSwitchBase):
                 "Can't turn off function %s at %s", self._func, self._resource
             )
 
+    
     def update(self) -> None:
         """Get the latest data from aREST API and update the state."""
         try:
@@ -161,7 +158,7 @@ class ArestSwitchFunction(ArestSwitchBase):
                     self.turn_off()
             if self._attr_available is False:
                 self._attr_available = True
-                
+
         except requests.exceptions.ConnectionError:
             _LOGGER.warning("No route to device %s", self._resource)
             self._attr_available = False
@@ -225,16 +222,14 @@ class ArestSwitchPin(ArestSwitchBase):
             request = requests.get(f"{self._resource}/digital/{self._pin}", timeout=10)
             status_value = int(self.invert)
             current_state = request.json()["return_value"] != status_value
+            if self._attr_available is False:
+                self.__set_pin_output()
             if self._attr_is_on != current_state:
                 _LOGGER.info("Reconcile with expected pin state %s", self._resource)
-                self.__set_pin_output()
                 if self._attr_is_on is True:
                     self.turn_on()
                 else:
                     self.turn_off()
-            if self._attr_available is False:
-                self._attr_available = True
-                self.__set_pin_output()
         except requests.exceptions.ConnectionError:
             self._attr_available = False
 
@@ -243,3 +238,5 @@ class ArestSwitchPin(ArestSwitchBase):
         if request.status_code != HTTPStatus.OK:
             _LOGGER.error("Can't set mode")
             self._attr_available = False
+        else:
+            self._attr_available = True
