@@ -148,8 +148,7 @@ class ArestSwitchFunction(ArestSwitchBase):
         """Get the latest data from aREST API and update the state."""
         try:
             request = requests.get(f"{self._resource}/{self._func}", timeout=10)
-            status_value = int(self.invert)
-            current_state = request.json()["return_value"] != status_value
+            current_state = request.json()["return_value"]
             if self._attr_is_on != current_state:
                 _LOGGER.info("Reconcile with expected pin state %s", self._resource)
                 if self._attr_is_on is True:
@@ -185,7 +184,7 @@ class ArestSwitchPin(ArestSwitchBase):
         """Initialize the switch."""
         super().__init__(resource, location, name, available)
         self._pin = pin
-        self.invert = invert
+        self._invert = invert
 
         if available is True:
             try:
@@ -196,7 +195,7 @@ class ArestSwitchPin(ArestSwitchBase):
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
-        turn_on_payload = int(not self.invert)
+        turn_on_payload = int(not self._invert)
         request = requests.get(
             f"{self._resource}/digital/{self._pin}/{turn_on_payload}", timeout=10
         )
@@ -207,7 +206,7 @@ class ArestSwitchPin(ArestSwitchBase):
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
-        turn_off_payload = int(self.invert)
+        turn_off_payload = int(self._invert)
         request = requests.get(
             f"{self._resource}/digital/{self._pin}/{turn_off_payload}", timeout=10
         )
@@ -220,7 +219,7 @@ class ArestSwitchPin(ArestSwitchBase):
         """Get the latest data from aREST API and update the state."""
         try:
             request = requests.get(f"{self._resource}/digital/{self._pin}", timeout=10)
-            status_value = int(self.invert)
+            status_value = int(self._invert)
             current_state = request.json()["return_value"] != status_value
             if self._attr_available is False:
                 self.__set_pin_output()
