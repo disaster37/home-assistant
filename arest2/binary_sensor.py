@@ -166,9 +166,9 @@ class ArestBinarySensorVariable(BinarySensorEntity):
             self._attr_available = False
 
     def __check_variable(self) -> None:
-        request = requests.get(f"{resource}/{variable}", timeout=10)
+        request = requests.get(f"{self._resource}/{self._variable}", timeout=10)
         if request.status_code != HTTPStatus.OK:
-            _LOGGER.error("Problem appear when get variable %s", resource)
-        if request.json()[variable] is None:
-            _LOGGER.error("Variable not found %s", resource)
+            _LOGGER.error("Problem appear when get variable %s", self._resource)
+        if request.json()[self._variable] is None:
+            _LOGGER.error("Variable not found %s", self._resource)
 
