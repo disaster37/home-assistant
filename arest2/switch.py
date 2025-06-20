@@ -20,6 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 CONF_FUNCTIONS = "functions"
 CONF_PINS = "pins"
 CONF_INVERT = "invert"
+CONF_ENSURE = "ensure"
 DEFAULT_NAME = "aREST switch"
 
 PIN_FUNCTION_SCHEMA = vol.Schema(
@@ -74,6 +75,7 @@ def setup_platform(
                 pin.get(CONF_NAME),
                 pinnum,
                 pin[CONF_INVERT],
+                pin[CONF_ENSURE],
                 isAvailable,
             )
         )
@@ -86,6 +88,7 @@ def setup_platform(
                 config.get(CONF_NAME),
                 func.get(CONF_NAME),
                 funcname,
+                func[CONF_ENSURE],
                 isAvailable,
             )
         )
@@ -96,20 +99,22 @@ def setup_platform(
 class ArestSwitchBase(SwitchEntity):
     """Representation of an aREST switch."""
 
-    def __init__(self, resource, location, name, available):
+    def __init__(self, resource, location, name, ensure, available):
+
         """Initialize the switch."""
         self._resource = resource
         self._attr_name = f"{location.title()} {name.title()}"
         self._attr_available = available
         self._attr_is_on = False
+        self._ensure = ensure
 
 
 class ArestSwitchFunction(ArestSwitchBase):
     """Representation of an aREST switch."""
 
-    def __init__(self, resource, location, name, func, available):
+    def __init__(self, resource, location, name, func, ensure, available):
         """Initialize the switch."""
-        super().__init__(resource, location, name, available)
+        super().__init__(resource, location, name, ensure, available)
         self._func = func
 
         if available is True:
@@ -149,7 +154,7 @@ class ArestSwitchFunction(ArestSwitchBase):
         try:
             request = requests.get(f"{self._resource}/{self._func}", timeout=10)
             current_state = request.json()["return_value"]
-            if self._attr_is_on != current_state:
+            if self._ensure is True and self._attr_is_on != current_state:
                 _LOGGER.info("Reconcile with expected pin state %s", self._resource)
                 if self._attr_is_on is True:
                     self.turn_on()
@@ -180,9 +185,9 @@ class ArestSwitchFunction(ArestSwitchBase):
 class ArestSwitchPin(ArestSwitchBase):
     """Representation of an aREST switch. Based on digital I/O."""
 
-    def __init__(self, resource, location, name, pin, invert, available) -> None:
+    def __init__(self, resource, location, name, pin, invert, ensure, available) -> None:
         """Initialize the switch."""
-        super().__init__(resource, location, name, available)
+        super().__init__(resource, location, name, ensure, available)
         self._pin = pin
         self._invert = invert
 
@@ -223,7 +228,7 @@ class ArestSwitchPin(ArestSwitchBase):
             current_state = request.json()["return_value"] != status_value
             if self._attr_available is False:
                 self.__set_pin_output()
-            if self._attr_is_on != current_state:
+            if self._ensure is True and self._attr_is_on != current_state:
                 _LOGGER.info("Reconcile with expected pin state %s", self._resource)
                 if self._attr_is_on is True:
                     self.turn_on()
