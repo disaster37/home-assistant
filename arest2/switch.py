@@ -26,8 +26,8 @@ DEFAULT_NAME = "aREST switch"
 PIN_FUNCTION_SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_NAME): cv.string,
-        vol.Optional(CONF_ENSURE, default=True): cv.Bollean, 
-        vol.Optional(CONF_INVERT, default=False): cv.boolean,
+        vol.Optional(CONF_ENSURE, default=True): cv.boolean, 
+        vol.Optional(CONF_INVERT, default=False): cv.boolean
     }
 )
 
